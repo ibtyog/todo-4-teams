@@ -1,6 +1,7 @@
 /* tag selector */
 body {
-    background-color: #3f3f3f;
+    background: rgb(70,224,255);
+    background: linear-gradient(90deg, rgba(70,224,255,1) 0%, rgba(150,30,123,1) 100%);
 }
 /* id selector */
 #nav-pal {
@@ -18,20 +19,27 @@ body {
     justify-content: center;
 }
 #form-box{
-    background-color: #737873;
+    background-color: #e8ece8;
     padding: 4%;
-    border-radius: 5%;
-    width: 20%;
+    width: 300px;
     display: flex;
     justify-content: center;
 }
 #footer {
-    position: absolute;
+    position: fixed;
     top: 95%;
     height: 6%;
     width: 100%;
-    background-color: #3f3f3f;
+    background: rgb(70,224,255);
+    background: linear-gradient(90deg, rgba(70,224,255,1) 0%, rgba(150,30,123,1) 100%);
     text-align: center;
+}
+#footer-p, #footer-a {
+    color: #ececec;
+}
+#footer-a {
+    text-decoration: none;
+    font-weight: bolder;
 }
 #register-p {
     text-align: center;
@@ -39,17 +47,28 @@ body {
 #warn-p {
     display: block;
     margin: 5% 0;
-    color: #737873;
+    color: #eeeeee;
 }
 #inv-a {
     text-decoration: none;
 }
+#submit-b {
+    border-radius: 0;
+    width: 100%;
+}
+#submit-b:hover {
+    border: 1px solid transparent;
+}
+#index-section {
+    margin-bottom: 10%;
+}
 /* class selector */
 .form-area {
     display: block;
-    margin: 4% 0%;
-    border: 0;
-    background-color:#d9ddf0;
+    margin: 2% 0%;
+    border: solid 1px #7e7e7e;
+    background-color:#eeeeee;
+    width: 100%;
 }
 .card-cont {
     display: flex;

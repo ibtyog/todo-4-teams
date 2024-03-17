@@ -1,47 +1,45 @@
 {% extends "base.html" %} {% block content %}
-
+<section id="index-section">
 <div class="container-fluid">
-    <div class="row">
-        <div class="col col-lg-4 col-md-12 card-cont">
-            <div class="card" style="width: 18rem;">
-                <div class="card-body">
-                  <h5 class="card-title">Latest personal tasks</h5>
-                </div>
-                <ul class="list-group list-group-flush">
-                  <li class="list-group-item">task 1</li>
-                  <li class="list-group-item">task 2</li>
-                  <li class="list-group-item">task 3</li>
-                </ul>
-                <div class="card-body">
-                  <a href="#" class="card-link"><button class="btn btn-dark">All tasks</button></a>
-                </div>
-              </div>
+  <div class="row">
+     <div class="col col-lg-4 col-md-12 col-sm-12 card-cont">
+        <div class="team-desc">
+           <h3>You are a member of</h3>
+           <h4>team #1</h4>
+           <p5 id="warn-p">If you want to abadon your team, press button below</p5>
+           <button class="btn btn-outline-light">Leave team</button>
         </div>
-        <div class="col col-lg-4 col-md-12 card-cont">
-            <div class="card" style="width: 18rem;">
-                <div class="card-body">
-                  <h5 class="card-title">Latest team tasks</h5>
-                </div>
-                <ul class="list-group list-group-flush">
-                  <li class="list-group-item">task 1</li>
-                  <li class="list-group-item">task 2</li>
-                  <li class="list-group-item">task 3</li>
-                </ul>
-                <div class="card-body">
-                  <a href="#" class="card-link"><button class="btn btn-dark">All tasks</button></a>
-                </div>
-              </div>
+     </div>
+     <div class="col col-lg-4 col-md-12 col-sm-12 card-cont">
+        <div class="card" style="width: 18rem;">
+           <div class="card-body">
+              <h5 class="card-title">Latest personal tasks</h5>
+           </div>
+           <ul class="list-group list-group-flush">
+              <li class="list-group-item">task 1</li>
+              <li class="list-group-item">task 2</li>
+              <li class="list-group-item">task 3</li>
+           </ul>
+           <div class="card-body">
+              <a href="#" class="card-link"><button class="btn btn-dark">All tasks</button></a>
+           </div>
         </div>
-        <div class="col col-lg-4 col-md-12">
-            <div class="team-desc">
-                <h3>You are a member of</h3>
-                <h4>team #1</h4>
-                <p5 id="warn-p">If you want to abadon your team, press button below</p5>
-                <button class="btn btn-outline-light">Leave team</button>
-            </div>
-
+     </div>
+     <div class="col col-lg-4 col-md-12 col-sm-12 card-cont">
+        <div class="card" style="width: 18rem;">
+           <div class="card-body">
+              <h5 class="card-title">Latest team tasks</h5>
+           </div>
+           <ul class="list-group list-group-flush">
+              <li class="list-group-item">task 1</li>
+              <li class="list-group-item">task 2</li>
+              <li class="list-group-item">task 3</li>
+           </ul>
+           <div class="card-body">
+              <a href="#" class="card-link"><button class="btn btn-dark">All tasks</button></a>
+           </div>
         </div>
-    </div>
-</div>
-
+     </div>
+  </div>
+</section>
 {% endblock %}
