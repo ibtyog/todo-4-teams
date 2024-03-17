@@ -1,0 +1,68 @@
+/* tag selector */
+body {
+    background-color: #3f3f3f;
+}
+/* id selector */
+#nav-pal {
+    background-color:  	#f0f0f0;
+}
+#welcome-h{
+    text-align: center;
+    color: #f0f0f0;
+}
+#row-h{
+    margin: 5%;
+}
+#form-r {
+    display: flex;
+    justify-content: center;
+}
+#form-box{
+    background-color: #737873;
+    padding: 4%;
+    border-radius: 5%;
+    width: 20%;
+    display: flex;
+    justify-content: center;
+}
+#footer {
+    position: absolute;
+    top: 95%;
+    height: 6%;
+    width: 100%;
+    background-color: #3f3f3f;
+    text-align: center;
+}
+#register-p {
+    text-align: center;
+}
+#warn-p {
+    display: block;
+    margin: 5% 0;
+    color: #737873;
+}
+#inv-a {
+    text-decoration: none;
+}
+/* class selector */
+.form-area {
+    display: block;
+    margin: 4% 0%;
+    border: 0;
+    background-color:#d9ddf0;
+}
+.card-cont {
+    display: flex;
+    justify-content: center;
+    padding: 3%;
+    box-sizing: border-box;
+}
+.team-desc {
+    text-align: center;
+    margin-top: 8%;
+    color: #f0f0f0;
+}
+.dark-list {
+    background-color: #3f3f3f;
+    color: #f0f0f0;
+}

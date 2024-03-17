@@ -1,0 +1,28 @@
+{% extends "base.html" %} {% block content %}
+
+
+<div class="container-fluid">
+    <div class="row" id="row-h">
+        <div class="col col-lg-12">
+            <h1 id="welcome-h">Welcome to lock in!</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-lg-12" id="form-r">
+            <div id="form-box">
+                <form action="{{url_for('register')}}" method="post" style="display: block;">
+                    <input type="email" name="email" class="form-area" placeholder="E-mail" required>
+                    <input type="text" name="username" class="form-area" placeholder="Username" required>
+                    <input type="password" name="password" class="form-area" placeholder="Password" required>
+                    <input type="text" name="team_code" class="form-area" placeholder="Team code (optional)">
+                    <input class="btn btn-outline-dark" id="submit-b" type="submit" value="Sign in">
+                </form>
+            </div>
+        </div>
+        <div id="register-p"class="col col-lg-12">
+            <p>If you have an account, <a href="{{url_for('login')}}">Sign in!</a></p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

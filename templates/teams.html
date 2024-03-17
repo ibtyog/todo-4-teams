@@ -1,0 +1,25 @@
+{% extends "base.html" %} {% block content %}
+
+
+<div class="container-fluid">
+    <div class="row" id="row-h">
+        <div class="col col-lg-12">
+            <h1 id="welcome-h">Welcome to lock in!</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-lg-12" id="form-r">
+            <div id="form-box">
+                <form action="{{url_for('joinTeam')}}" method="post" style="display: block;">
+                    <input type="text" name="team_code" class="form-area" placeholder="Team code">
+                    <input class="btn btn-outline-dark" id="submit-b" type="submit" value="Join team!" required>
+                </form>
+            </div>
+        </div>
+        <div id="register-p"class="col col-lg-12">
+            <p>You can skip this step<a href="{{url_for('home')}}"> here.</a></p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

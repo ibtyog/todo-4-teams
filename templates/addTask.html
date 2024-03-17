@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block content %}
+
+
+<div class="container-fluid">
+    <div class="row" id="row-h">
+        <div class="col col-lg-12">
+            <h1 id="welcome-h">Task manager</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-lg-12" id="form-r">
+            <div id="form-box">
+                <form action="#" method="post" style="display: block;">
+                    <input type="text" name="TaskName" class="form-area" placeholder="Task">
+                    <input type="text" name="AssignedUser" class="form-area" placeholder="Username#id">
+                    <input type="datetime-local" name="expirationDate" class="form-area" placeholder="Expiration date">
+                    <input class="btn btn-outline-dark" id="submit-b" type="submit" value="Add task">
+                </form>
+            </div>
+        </div>
+        <div id="register-p"class="col col-lg-12">
+            <p>Back to team<a href="{{url_for('login')}}"> dashboard.</a></p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
