@@ -4,15 +4,17 @@
     <div class="row">
         <div class="col col-lg-12 card-cont">
             <button class="btn btn-dark">Create task</button>
-            <button class="btn btn-dark">Create invite code</button>
+            <a href="{{url_for('createInvite')}}"><button class="btn btn-dark">Create invite code</button></a> 
         </div>
     </div>
     <div class="row">
         <div class="col-lg-12">
             <ul class="list-group list-group-flush">
-                <li class="list-group-item dark-list">Members</li>
-                <li class="list-group-item dark-list">member 1 username - <a href="">Add task</a> - <a href="">Remove member</a></li>
-                <li class="list-group-item dark-list">A third item</li>
+                <li class="list-group-item light-list">Members</li>
+                {% for user in users: %}
+                <li class="list-group-item light-list">{{ user.name }} - <a href="">Add task</a> - <a href="">Remove member</a></li>
+                {% endfor %}
+                <li class="list-group-item light-list">A third item</li>
               </ul>
         </div>
         

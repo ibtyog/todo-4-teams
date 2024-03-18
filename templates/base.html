@@ -30,10 +30,10 @@
             <li class="nav-item">
               <a class="nav-link" href="{{url_for('home')}}">Home</a>
             </li>
-            {% if not logged_in: %}
             <li class="nav-item">
               <a class="nav-link" href="#">About</a>
             </li>
+            {% if not logged_in: %}
             <li class="nav-item">
               <a class="nav-link" href="{{url_for('login')}}">Login</a>
             </li>
@@ -42,12 +42,17 @@
             <li class="nav-item">
               <a class="nav-link" href="{{url_for('myTasks')}}">My tasks</a>
             </li>
-            {% if user.team_code != ''%}
+            {% if user.team_id != ''%}
             <li class="nav-item">
-              <a class="nav-link" href="{{url_for('teamTasks')}}">Team</a>
+              <a class="nav-link" href="{{url_for('teamTasks')}}">Team tasks</a>
+            </li>
+            {% if user.is_admin == 1%}
+            {% endif %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{url_for('teamDashboard')}}">Team Dashboard</a>
             </li>
             {% endif %}
-            {% if user.team_code == '' %}
+            {% if user.team_id == '' %}
             <li class="nav-item">
               <a class="nav-link" href="{{url_for('joinTeam')}}">Join team</a>
             </li>

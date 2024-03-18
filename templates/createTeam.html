@@ -10,12 +10,10 @@
             <div id="form-box">
                 <form action="{{url_for('createTeam')}}" method="post" style="display: block;">
                     <input type="text" name="team_name" class="form-area" placeholder="Team name" required>
-                    <input class="btn btn-outline-dark" id="submit-b" type="submit" value="Sign in">
+                    <input class="btn btn-outline-dark" id="submit-b" type="submit" value="Create team">
+                    <p>or <a href="{{url_for('joinTeam')}}">Join team!</a></p>
                 </form>
             </div>
-        </div>
-        <div id="register-p"class="col col-lg-12">
-            <p>If you want to join team, <a href="{{url_for('joinTeam')}}">click me!</a></p>
         </div>
     </div>
 </div>
