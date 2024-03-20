@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, insert, update
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-
+from code_gen import get_random_code
 # flask init
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key-goes-here'
@@ -36,6 +36,7 @@ class Team(db.Model):
 
 class TeamInvites(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    team_code: Mapped[str] = mapped_column(String(8))
     team_id: Mapped[int] = mapped_column(Integer)
     no_uses: Mapped[int] = mapped_column(Integer)
 
@@ -123,15 +124,20 @@ def teamTasks():
 def joinTeam():
     if current_user.team_id == '':
         if request.method == 'POST':
-            # id = current_user.id
-            # db.session.execute(db.update(User).where(User.id == id).values(team_id=request.form.get('team_code')))
-            # db.session.commit()
+            id = current_user.id
+            team_code = request.form.get('team_code')
+            team = db.session.execute(db.Select(TeamInvites).where(TeamInvites.team_code == team_code)).scalar()
+            if team != None:
+                db.session.execute(db.update(User).where(User.id == id).values(team_id=team.team_id))
+                db.session.commit()
             return redirect(url_for('home'))
     else:
         return redirect(url_for('home'))
     return render_template('teams.html')
 @app.route('/leaveTeam', methods=['GET','POST'])
 def leaveTeam():
+    db.session.execute(db.update(User).values(team_id=''))
+    db.session.commit()
     return redirect(url_for('home'))
 
 
@@ -179,7 +185,29 @@ def addTask():
 
 @app.route('/createInvite', methods=['GET','POST'])
 def createInvite():
-    return render_template('invite.html')
+    if current_user.is_authenticated:
+        if current_user.is_admin == 1:
+            if request.method == 'POST':
+                code = get_random_code()
+                while db.session.execute(db.Select(TeamInvites).where(TeamInvites.team_code == code)).scalar() != None:
+                    code = get_random_code()
+                new_invite = TeamInvites(
+                    team_code=code,
+                    team_id = current_user.team_id,
+                    no_uses = request.form.get('no_uses')
+                )
+                team_str = new_invite.team_code
+                db.session.add(new_invite)
+                db.session.commit()
+                print(team_str)
+                return render_template('invite.html',  user=current_user, team_code=team_str)
+            return render_template('createInvite.html', method=request.method, user=current_user)
+        else:
+            return redirect(url_for('createTeam'))
+    else:
+        return redirect(url_for('login'))
+
+
 
 @app.route('/logout')
 def logout():
