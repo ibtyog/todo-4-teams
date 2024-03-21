@@ -129,6 +129,12 @@ def joinTeam():
             team = db.session.execute(db.Select(TeamInvites).where(TeamInvites.team_code == team_code)).scalar()
             if team != None:
                 db.session.execute(db.update(User).where(User.id == id).values(team_id=team.team_id))
+                new_member = TeamMembers(
+                    team_id = team.id,
+                    user_id = current_user.id
+                )
+                db.session.add(new_member)
+
                 db.session.commit()
             return redirect(url_for('home'))
     else:
@@ -136,7 +142,18 @@ def joinTeam():
     return render_template('teams.html')
 @app.route('/leaveTeam', methods=['GET','POST'])
 def leaveTeam():
+    team_id = current_user.team_id
     db.session.execute(db.update(User).values(team_id=''))
+    team_member = db.session.execute(db.Select(TeamMembers).where(TeamMembers.user_id == current_user.id)).scalar()
+    db.session.delete(team_member)
+    team_count = db.session.execute(db.Select(TeamMembers).where(TeamMembers.team_id == team_id)).scalars().all()
+    if team_count == []:
+        team = db.session.execute(db.Select(Team).where(Team.id == team_id)).scalar()
+        invites = db.session.execute(db.Select(TeamInvites).where(TeamInvites.team_id == team_id)).scalars().all()
+        for invite in invites:
+            db.session.delete(invite)
+        db.session.delete(team)
+
     db.session.commit()
     return redirect(url_for('home'))
 
