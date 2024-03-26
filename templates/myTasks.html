@@ -2,24 +2,31 @@
 
 <div class="container-fluid">
     <div class="row">
+        <div class="col col-lg-12 card-cont">
+            <h1>{{user.name}}'s Personal tasks</h1>
+        </div>
+        <div class="col col-lg-12 card-cont">
+            <a id="task-a"href="{{url_for('createPersonalTask')}}"><button class="btn btn-dark">Create task</button></a>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-lg-12">
             <ul class="list-group list-group-flush">
-                <li class="list-group-item dark-list">Task description - due - is done?</li>
-                <li class="list-group-item dark-list">A second item - 24.03.2024 - <a href="">Task complete</a></li>
-                <li class="list-group-item dark-list">A third item</li>
-                <li class="list-group-item dark-list">A fourth item</li>
-                <li class="list-group-item dark-list">And a fifth one</li>
+                <li class="list-group-item light-list">Curent tasks</li>
+                {% for task in c_tasks: %}
+                <li class="list-group-item light-list">Description: {{task.title}} | Due: {{task.str_time}}</li>
+                {%endfor%}
               </ul>
         </div>
         
         <div class="col-lg-12">
             <ul class="list-group list-group-flush">
-                <li class="list-group-item dark-list">Expired tasks</li>
-                <li class="list-group-item dark-list">A second item - 24.03.2024 - <a href="">Task complete</a></li>
-                <li class="list-group-item dark-list">A third item</li>
-                <li class="list-group-item dark-list">A fourth item</li>
-                <li class="list-group-item dark-list">And a fifth one</li>
-              </ul>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item light-list">Expired tasks</li>
+                    {% for task in e_tasks: %}
+                    <li class="list-group-item light-list">Description: {{task.title}} | Due: {{task.str_time}}</li>
+                    {%endfor%}
+                  </ul>
         </div>
     </div>
 </div>

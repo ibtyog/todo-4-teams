@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, insert, update
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+import datetime
 from code_gen import get_random_code
 # flask init
 app = Flask(__name__)
@@ -47,6 +48,13 @@ class TeamMembers(db.Model):
     user_id = mapped_column(Integer)
 
 
+class PersonalTask(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer)
+    title: Mapped[str] = mapped_column(String(128))
+    expiration_date: Mapped[int] = mapped_column(Integer)
+    str_time: Mapped[str] = mapped_column(String(32))
+
 with app.app_context():
     db.create_all()
 
@@ -62,7 +70,9 @@ def load_user(user_id):
 def home():
     if current_user.is_authenticated:
         team = db.session.execute(db.select(Team).where(Team.id == current_user.team_id)).scalar()
-        return render_template('index.html',  logged_in=current_user.is_authenticated, user=current_user, team=team)
+        current_time = int(datetime.datetime.now().strftime("%Y%m%d%H%M%S")[:-2])
+        tasks = db.session.execute(db.Select(PersonalTask).where(PersonalTask.user_id == current_user.id, PersonalTask.expiration_date >= current_time).order_by(PersonalTask.expiration_date).limit(3)).scalars().all()
+        return render_template('index.html', user=current_user, team=team, tasks=tasks)
     else:
         return redirect(url_for('login'))
 
@@ -72,33 +82,41 @@ def register():
         check_if_exist = db.session.execute(db.select(User).where(User.email == request.form['email'])).scalar()
         if check_if_exist == None:
             password = generate_password_hash(request.form.get('password'), method='pbkdf2:sha256', salt_length=8)
-            if request.form.get('team_code') != '':
-                new_user = User(
-                    email=request.form.get('email'),
-                    name=request.form.get('username'),
-                    password=password,
-                    team_id=request.form.get('team_code'),
-                    is_admin=0
-                )
-            else:
-                new_user = User(
+            new_user = User(
                     email=request.form.get('email'),
                     name=request.form.get('username'),
                     password=password,
                     team_id='',
                     is_admin=0
                 )
-                db.session.add(new_user)
-                db.session.commit()
-                login_user(new_user)
-                return redirect(url_for('joinTeam'))
             db.session.add(new_user)
             db.session.commit()
             login_user(new_user)
+            if request.form.get('team_code') != '':
+                team_code = request.form.get('team_code')
+                team = db.session.execute(db.Select(TeamInvites).where(TeamInvites.team_code == team_code)).scalar()
+                if team != None:
+                    new_member = TeamMembers(
+                        team_id = team.team_id,
+                        user_id = current_user.id
+                    )
+                    db.session.add(new_member)
+                    db.session.commit()
+                    db.session.execute(db.update(User).where(User.id == new_member.user_id).values(team_id=new_member.team_id))
+
+                    no_uses = team.no_uses - 1
+                    db.session.execute(db.update(TeamInvites).where(TeamInvites.id == team.id).values(no_uses=no_uses))
+                    invite = db.session.execute(db.select(TeamInvites).where(TeamInvites.id == team.id)).scalar()
+                    if invite.no_uses == 0:
+                        db.session.delete(invite)
+                    db.session.commit()
+            else:
+                return redirect(url_for('joinTeam'))
+
             return redirect(url_for('home'))
         else:
             flask.flash("Email already in use")
-    return render_template("register.html")
+    return render_template("register.html", user=current_user)
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -112,14 +130,24 @@ def login():
                 return redirect(url_for('home'))
         else:
             flask.flash('Wrong creditentials')
-    return render_template("login.html", messages=flask.get_flashed_messages())
+    return render_template("login.html", messages=flask.get_flashed_messages(), user=current_user)
 
 @app.route('/myTasks', methods=['GET', 'POST'])
 def myTasks():
-    return render_template('myTasks.html')
+    if current_user.is_authenticated:
+        current_time = int(datetime.datetime.now().strftime("%Y%m%d%H%M%S")[:-2])
+        current_tasks = db.session.execute(db.Select(PersonalTask).where(PersonalTask.user_id == current_user.id, PersonalTask.expiration_date >= current_time)).scalars().all()
+        expired_tasks = db.session.execute(db.Select(PersonalTask).where(PersonalTask.user_id == current_user.id, PersonalTask.expiration_date < current_time)).scalars().all()
+
+        return render_template('myTasks.html', user=current_user, c_tasks=current_tasks, e_tasks=expired_tasks)
+    return redirect(url_for('login'))
+
+
 @app.route('/teamTasks', methods=['GET', 'POST'])
 def teamTasks():
-    return render_template('teamTasks.html')
+    return render_template('teamTasks.html', user=current_user)
+
+
 @app.route('/joinTeam', methods=['GET','POST'])
 def joinTeam():
     if current_user.team_id == '':
@@ -134,12 +162,17 @@ def joinTeam():
                     user_id = current_user.id
                 )
                 db.session.add(new_member)
-
+                no_uses = team.no_uses - 1
+                db.session.execute(db.update(TeamInvites).where(TeamInvites.id == team.id).values(no_uses=no_uses))
+                invite = db.session.execute(db.select(TeamInvites).where(TeamInvites.id == team.id)).scalar()
+                if invite.no_uses == 0:
+                    db.session.delete(invite)
                 db.session.commit()
             return redirect(url_for('home'))
     else:
         return redirect(url_for('home'))
-    return render_template('teams.html')
+    return render_template('teams.html', user=current_user)
+# TODO: if admin leaves team delete team and remove members, invites, tasks
 @app.route('/leaveTeam', methods=['GET','POST'])
 def leaveTeam():
     team_id = current_user.team_id
@@ -178,10 +211,10 @@ def createTeam():
         return redirect(url_for('home'))
     if current_user.is_authenticated:
         if current_user.team_id == '':
-            return render_template('createTeam.html')
+            return render_template('createTeam.html', user=current_user)
     else:
         return redirect(url_for('login'))
-
+# TODO: add members tasks and removing members
 @app.route('/teamDashboard', methods=['GET','POST'])
 def teamDashboard():
     if current_user.is_authenticated:
@@ -191,14 +224,11 @@ def teamDashboard():
             users = []
             for team_user in team_members:
                 users.append(db.session.execute(db.select(User).where(User.id == team_user.user_id)).scalar())
-            return render_template('teamDashboard.html', users=users)
+            return render_template('teamDashboard.html', users=users, user=current_user)
         else:
             return redirect(url_for('teamTasks'))
     else:
         return redirect(url_for('createTeam'))
-@app.route('/addTask', methods=['GET','POST'])
-def addTask():
-    return render_template('addTask.html')
 
 @app.route('/createInvite', methods=['GET','POST'])
 def createInvite():
@@ -224,7 +254,25 @@ def createInvite():
     else:
         return redirect(url_for('login'))
 
-
+@app.route('/createPersonalTask', methods=['GET','POST'])
+def createPersonalTask():
+    if current_user.is_authenticated:
+        if request.method == "POST":
+            datetime = request.form.get('expiration-date')
+            date = int(datetime[0:4] + datetime[5:7] + datetime[8:10] + datetime[11:13] + datetime[14:])
+            str_time = datetime[0:4] + '-' + datetime[5:7] + '-' +  datetime[8:10] + ' ' +  datetime[11:13] + ':' +  datetime[14:]
+            task = PersonalTask(
+                user_id = current_user.id,
+                title = request.form.get('title'),
+                expiration_date = date,
+                str_time = str_time
+            )
+            db.session.add(task)
+            db.session.commit()
+            return redirect(url_for('myTasks'))
+        return render_template('createPersonalTask.html', user=current_user)
+    else:
+        return redirect(url_for('login'))
 
 @app.route('/logout')
 def logout():

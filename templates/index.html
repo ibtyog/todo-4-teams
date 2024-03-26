@@ -8,7 +8,7 @@
            <h3>You are a member of</h3>
            <h4>{{team.team_name}}</h4>
            <p5 id="warn-p">If you want to abadon your team, press button below</p5>
-           <button class="btn btn-outline-light">Leave team</button>
+           <a href="{{url_for('leaveTeam')}}"><button class="btn btn-outline-light">Leave team</button></a>
            {% endif %}
            {% if current_user.team_id == '' %}
            <h3>It's always better to work in team!</h3>
@@ -23,12 +23,12 @@
               <h5 class="card-title">Latest personal tasks</h5>
            </div>
            <ul class="list-group list-group-flush">
-              <li class="list-group-item">task 1</li>
-              <li class="list-group-item">task 2</li>
-              <li class="list-group-item">task 3</li>
+              {% for task in tasks: %}
+              <li class="list-group-item">{{task.title}} - due: {{task.str_time}}</li>
+              {% endfor %}
            </ul>
            <div class="card-body">
-              <a href="#" class="card-link"><button class="btn btn-dark">All tasks</button></a>
+              <a href="{{url_for('myTasks')}}" class="card-link"><button class="btn btn-dark">All tasks</button></a>
            </div>
         </div>
      </div>
