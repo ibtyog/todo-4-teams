@@ -12,7 +12,7 @@
             <ul class="list-group list-group-flush">
                 <li class="list-group-item light-list">Members</li>
                 {% for user in users: %}
-                <li class="list-group-item light-list">{{ user.name }} - <a href="">Add task</a> - <a href="">Remove member</a></li>
+                <li class="list-group-item light-list">{{ user.name }} - <a href="{{url_for('giveTask', user_id=user.id)}}">Add task</a> - <a href="{{url_for('removeMember', user_id=user.id)}}">Remove member</a></li>
                 {% endfor %}
                 <li class="list-group-item light-list">A third item</li>
               </ul>

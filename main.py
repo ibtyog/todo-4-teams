@@ -55,6 +55,14 @@ class PersonalTask(db.Model):
     expiration_date: Mapped[int] = mapped_column(Integer)
     str_time: Mapped[str] = mapped_column(String(32))
 
+class TeamTasks(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    team_id: Mapped[int] = mapped_column(Integer)
+    user_id: Mapped[int] = mapped_column(Integer)
+    title: Mapped[str] = mapped_column(String(128))
+    expiration_date: Mapped[int] = mapped_column(Integer)
+    str_time: Mapped[str] = mapped_column(String(32))
+
 with app.app_context():
     db.create_all()
 
@@ -145,8 +153,33 @@ def myTasks():
 
 @app.route('/teamTasks', methods=['GET', 'POST'])
 def teamTasks():
-    return render_template('teamTasks.html', user=current_user)
+    if current_user.is_authenticated:
+        current_time = int(datetime.datetime.now().strftime("%Y%m%d%H%M%S")[:-2])
+        my_current_tasks = db.session.execute(db.Select(TeamTasks).where(TeamTasks.user_id == current_user.id, TeamTasks.expiration_date >= current_time)).scalars().all()
+        my_expired_tasks = db.session.execute(db.Select(TeamTasks).where(TeamTasks.user_id == current_user.id, TeamTasks.expiration_date < current_time)).scalars().all()
+        others_current_tasks = db.session.execute(db.Select(TeamTasks).where(TeamTasks.user_id != current_user.id, TeamTasks.expiration_date >= current_time)).scalars().all()
+        others_expired_tasks = db.session.execute(db.Select(TeamTasks).where(TeamTasks.user_id != current_user.id, TeamTasks.expiration_date < current_time)).scalars().all()
+    return render_template('teamTasks.html', user=current_user, mc=my_current_tasks, me=my_expired_tasks, oc=others_current_tasks,oe=others_expired_tasks)
 
+@app.route('/team_task_done/<task_id>', methods=['GET','POST'])
+def teamTaskDone(task_id):
+    task = db.session.execute(db.Select(TeamTasks).where(TeamTasks.id == task_id)).scalar()
+    if current_user.is_authenticated:
+        if task != None and task.user_id == current_user.id:
+            db.session.delete(task)
+            db.session.commit()
+        return redirect(url_for('teamTasks'))
+    return redirect(url_for('login'))
+
+@app.route('/task_done/<task_id>', methods=['GET','POST'])
+def taskDone(task_id):
+    task = db.session.execute(db.Select(PersonalTask).where(PersonalTask.id == task_id)).scalar()
+    if current_user.is_authenticated:
+        if task != None and task.user_id == current_user.id:
+            db.session.delete(task)
+            db.session.commit()
+        return redirect(url_for('myTasks'))
+    return redirect(url_for('login'))
 
 @app.route('/joinTeam', methods=['GET','POST'])
 def joinTeam():
@@ -172,24 +205,29 @@ def joinTeam():
     else:
         return redirect(url_for('home'))
     return render_template('teams.html', user=current_user)
-# TODO: if admin leaves team delete team and remove members, invites, tasks
+
 @app.route('/leaveTeam', methods=['GET','POST'])
 def leaveTeam():
-    team_id = current_user.team_id
-    db.session.execute(db.update(User).values(team_id=''))
-    team_member = db.session.execute(db.Select(TeamMembers).where(TeamMembers.user_id == current_user.id)).scalar()
-    db.session.delete(team_member)
-    team_count = db.session.execute(db.Select(TeamMembers).where(TeamMembers.team_id == team_id)).scalars().all()
-    if team_count == []:
-        team = db.session.execute(db.Select(Team).where(Team.id == team_id)).scalar()
-        invites = db.session.execute(db.Select(TeamInvites).where(TeamInvites.team_id == team_id)).scalars().all()
-        for invite in invites:
-            db.session.delete(invite)
-        db.session.delete(team)
-
-    db.session.commit()
+    if current_user.is_authenticated:
+        if current_user.is_admin == 1:
+            team_id = current_user.team_id
+            team_tasks = db.session.execute(db.Select(TeamTasks).where(TeamTasks.team_id == team_id)).scalars().all()
+            team_invites = db.session.execute(db.Select(TeamInvites).where(TeamInvites.team_id == team_id)).scalars().all()
+            for invite in team_invites:
+                db.session.delete(invite)
+            for task in team_tasks:
+                db.session.delete(task)
+            team_users = db.session.execute(db.Select(User).where(User.team_id == team_id)).scalars().all()
+            db.session.execute(db.update(User).where(User.id == current_user.id).values(is_admin=0))
+            for user in team_users:
+                db.session.execute(db.update(User).where(User.id == user.id).values(team_id=''))
+            team = db.session.execute(db.Select(Team).where(Team.id == team_id)).scalar()
+            db.session.delete(team)
+        user_team = db.session.execute(db.Select(TeamMembers).where(TeamMembers.team_id == current_user.team_id)).scalar()
+        db.session.delete(user_team)
+        db.session.execute(db.update(User).where(User.id == current_user.id).values(team_id=''))
+        db.session.commit()
     return redirect(url_for('home'))
-
 
 @app.route('/createTeam', methods=['GET','POST'])
 def createTeam():
@@ -214,7 +252,7 @@ def createTeam():
             return render_template('createTeam.html', user=current_user)
     else:
         return redirect(url_for('login'))
-# TODO: add members tasks and removing members
+
 @app.route('/teamDashboard', methods=['GET','POST'])
 def teamDashboard():
     if current_user.is_authenticated:
@@ -222,6 +260,7 @@ def teamDashboard():
             team = db.session.execute(db.select(Team).where(Team.id == current_user.team_id)).scalar()
             team_members = db.session.execute(db.select(TeamMembers).where(TeamMembers.team_id == team.id)).scalars().all()
             users = []
+
             for team_user in team_members:
                 users.append(db.session.execute(db.select(User).where(User.id == team_user.user_id)).scalar())
             return render_template('teamDashboard.html', users=users, user=current_user)
@@ -246,7 +285,6 @@ def createInvite():
                 team_str = new_invite.team_code
                 db.session.add(new_invite)
                 db.session.commit()
-                print(team_str)
                 return render_template('invite.html',  user=current_user, team_code=team_str)
             return render_template('createInvite.html', method=request.method, user=current_user)
         else:
@@ -274,6 +312,47 @@ def createPersonalTask():
     else:
         return redirect(url_for('login'))
 
+@app.route('/giveTask/<user_id>', methods=['GET','POST'])
+def giveTask(user_id):
+
+    user = db.session.execute(db.Select(User).where(User.id == user_id)).scalar()
+    if current_user.is_admin == 1:
+        if user.team_id == current_user.team_id:
+            if request.method == 'POST':
+                datetime = request.form.get('expiration-date')
+                date = int(datetime[0:4] + datetime[5:7] + datetime[8:10] + datetime[11:13] + datetime[14:])
+                str_time = datetime[0:4] + '-' + datetime[5:7] + '-' + datetime[8:10] + ' ' + datetime[
+                                                                                              11:13] + ':' + datetime[
+                                                                                                             14:]
+                task = TeamTasks(
+                    user_id=user.id,
+                    title=request.form.get('title'),
+                    team_id = user.team_id,
+                    expiration_date=date,
+                    str_time=str_time
+                )
+                db.session.add(task)
+                db.session.commit()
+                return redirect(url_for('teamDashboard'))
+            else:
+                return render_template('createTeamTask.html', user=current_user, user_id=user_id)
+        else:
+            return redirect(url_for('teamDashboard'))
+    return redirect(url_for('home'))
+
+@app.route('/removeMember/<user_id>')
+def removeMember(user_id):
+    if current_user.is_authenticated:
+        if current_user.is_admin == 1:
+            user = db.session.execute(db.Select(User).where(User.id == user_id)).scalar()
+            if user.team_id == current_user.team_id:
+                db.session.execute(db.update(User).where(User.id == user.id).values(team_id = ''))
+                team_member = db.session.execute(db.Select(TeamMembers).where(TeamMembers.user_id == user_id)).scalar()
+                db.session.delete(team_member)
+                db.session.commit()
+            return redirect(url_for('teamDashboard'))
+        return redirect(url_for('home'))
+    return redirect(url_for('login'))
 @app.route('/logout')
 def logout():
     logout_user()

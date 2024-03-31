@@ -10,24 +10,27 @@
         </div>
     </div>
     <div class="row">
+        {% if c_tasks != []: %}
         <div class="col-lg-12">
             <ul class="list-group list-group-flush">
                 <li class="list-group-item light-list">Curent tasks</li>
                 {% for task in c_tasks: %}
-                <li class="list-group-item light-list">Description: {{task.title}} | Due: {{task.str_time}}</li>
+                <li class="list-group-item light-list">{{task.title}} - {{task.str_time}} - <a href="{{url_for('taskDone', task_id=task.id)}}">Task Complete</a></li>
                 {%endfor%}
               </ul>
         </div>
-        
+        {% endif %}
+        {% if e_tasks != []:%}
         <div class="col-lg-12">
             <ul class="list-group list-group-flush">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item light-list">Expired tasks</li>
                     {% for task in e_tasks: %}
-                    <li class="list-group-item light-list">Description: {{task.title}} | Due: {{task.str_time}}</li>
+                    <li class="list-group-item light-list">{{task.title}} - {{task.str_time}} - <a href="{{url_for('taskDone', task_id=task.id)}}">Task Complete</a></li>
                     {%endfor%}
                   </ul>
         </div>
+        {% endif %}
     </div>
 </div>
 

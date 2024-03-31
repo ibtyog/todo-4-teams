@@ -1,0 +1,23 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="container-fluid">
+    <div class="row" id="row-h">
+        <div class="col col-lg-12">
+            <h1 id="welcome-h">Create team task</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-lg-12" id="form-r">
+            <div id="form-box">
+                <form action="{{url_for('giveTask', user_id=user_id)}}" method="post" style="display: block;">
+                    <input type="text" name="title" class="form-area" placeholder="Task description">
+                    <input type="datetime-local" name="expiration-date" class="form-area" placeholder="Expiration date">
+                    <input class="btn btn-outline-dark" id="submit-b" type="submit" value="Add task">
+                    <a href="{{url_for('teamDashboard')}}">go back</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
